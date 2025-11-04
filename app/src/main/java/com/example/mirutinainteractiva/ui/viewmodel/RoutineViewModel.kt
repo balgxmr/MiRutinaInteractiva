@@ -33,4 +33,10 @@ class RoutineViewModel(private val repository: RoutineRepository) : ViewModel() 
             repository.deleteRoutine(routine)
         }
     }
+
+    fun markRoutineAsCompleted(id: Int) {
+        viewModelScope.launch {
+            repository.markRoutineAsCompleted(id)
+        }
+    }
 }

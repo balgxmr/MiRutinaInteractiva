@@ -20,15 +20,17 @@ import com.example.mirutinainteractiva.ui.components.BottomBar
 import com.example.mirutinainteractiva.ui.screens.MainScreen
 import com.example.mirutinainteractiva.ui.screens.RoutineExecutionScreen
 import com.example.mirutinainteractiva.ui.screens.RoutineSelectionScreen
+import com.example.mirutinainteractiva.ui.screens.SummaryScreen
 import com.example.mirutinainteractiva.ui.viewmodel.RoutineViewModel
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     object Welcome : Screen("welcome", "Inicio", Icons.Default.Home)
     object RoutineSelection : Screen("routineSelection", "Rutinas", Icons.Default.List)
     object Summary : Screen("summary", "Progreso", Icons.Default.Favorite)
-    object RoutineExecution : Screen("routineExecution", "Ejecutar", Icons.Default.PlayArrow)
+    object RoutineExecution : Screen("routineExecution", "Ejecutar", Icons.Default.PlayArrow) {
+        const val ROUTE_WITH_ARG = "routineExecution/{routineId}"
+    }
 }
-
 
 @Composable
 fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewModel) {
@@ -40,11 +42,11 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
             startDestination = Screen.Welcome.route,
             modifier = Modifier.padding(innerPadding)
         ) {
+            // Pantalla de selección/creación de rutinas
             composable(Screen.RoutineSelection.route) {
                 RoutineSelectionScreen(
                     routineViewModel = routineViewModel,
                     onRoutineCreated = {
-                        // Cuando se guarda una rutina, volvemos a la pantalla principal
                         navController.navigate(Screen.Welcome.route) {
                             popUpTo(Screen.Welcome.route) { inclusive = true }
                         }
@@ -52,47 +54,70 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                 )
             }
 
-            composable(Screen.RoutineExecution.route) {
-                // Aquí deberías recibir la rutina seleccionada como argumento
-                val dummyRoutine = Routine(
-                    id = 1,
-                    title = "Rutina de ejemplo",
-                    description = "Ejemplo de ejecución paso a paso",
-                    difficulty = "Fácil",
-                    imageRes = null
-                )
-
-                RoutineExecutionScreen(
-                    routine = dummyRoutine,
-                    onFinish = { navController.navigate(Screen.Summary.route) }
-                )
-            }
-
-            composable(Screen.Summary.route) {
-                // Aquí luego implementamos la pantalla de progreso/resumen
-                Text("Pantalla de progreso")
-            }
-
-            composable(Screen.Welcome.route) {
-                val routinesEntities = routineViewModel.routines.collectAsState(initial = emptyList()).value
-
-                MainScreen(
-                    routines = routinesEntities.map {
-                        com.example.mirutinainteractiva.data.models.Routine(
+            // Pantalla de ejecución de rutina con argumento ID
+            composable(Screen.RoutineExecution.ROUTE_WITH_ARG) { backStackEntry ->
+                val id = backStackEntry.arguments?.getString("routineId")?.toInt()
+                val routine = routineViewModel.routines.collectAsState(initial = emptyList()).value
+                    .map {
+                        Routine(
                             id = it.id,
                             title = it.title,
                             description = it.description,
                             difficulty = it.difficulty,
                             imageRes = it.imageRes
                         )
-                    },
-                    onStartClick = { navController.navigate(Screen.RoutineSelection.route) },
-                    onRoutineClick = { routine ->
-                        navController.navigate(Screen.RoutineExecution.route)
+                    }
+                    .find { it.id == id }
+
+                routine?.let {
+                    RoutineExecutionScreen(
+                        routine = it,
+                        onFinish = {
+                            routineViewModel.markRoutineAsCompleted(it.id)
+                            navController.navigate(Screen.Summary.route) {
+                                popUpTo(Screen.Welcome.route) { saveState = true }
+                                launchSingleTop = true
+                            }
+                        }
+                    )
+                } ?: Text("No se encontró la rutina seleccionada")
+            }
+
+            // Pantalla de progreso/resumen
+            composable(Screen.Summary.route) {
+                SummaryScreen(
+                    onBackToHome = {
+                        navController.navigate(Screen.Welcome.route) {
+                            popUpTo(Screen.Welcome.route) { inclusive = true }
+                            launchSingleTop = true
+                        }
                     }
                 )
             }
-            // demás pantallas...
+
+            // Pantalla principal (Welcome)
+            composable(Screen.Welcome.route) {
+                val routinesEntities = routineViewModel.routines.collectAsState(initial = emptyList()).value
+
+                MainScreen(
+                    routines = routinesEntities
+                        .filter { !it.completed } // 🔹 Solo las no completadas
+                        .map {
+                            Routine(
+                                id = it.id,
+                                title = it.title,
+                                description = it.description,
+                                difficulty = it.difficulty,
+                                imageRes = it.imageRes,
+                                completed = it.completed
+                            )
+                        },
+                    onStartClick = { navController.navigate(Screen.RoutineSelection.route) },
+                    onRoutineClick = { routine ->
+                        navController.navigate("${Screen.RoutineExecution.route}/${routine.id}")
+                    }
+                )
+            }
         }
     }
 }

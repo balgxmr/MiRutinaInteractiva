@@ -15,4 +15,14 @@ class RoutineRepository(private val dao: RoutineDao) {
     suspend fun deleteRoutine(routine: RoutineEntity) {
         dao.deleteRoutine(routine)
     }
+
+    suspend fun updateRoutine(routine: RoutineEntity) {
+        dao.updateRoutine(routine)
+    }
+
+    suspend fun markRoutineAsCompleted(id: Int) {
+        val routine = dao.getRoutineById(id)
+        dao.updateRoutine(routine.copy(completed = true))
+    }
+
 }

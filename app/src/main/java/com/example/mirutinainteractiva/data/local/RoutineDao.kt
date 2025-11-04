@@ -13,4 +13,10 @@ interface RoutineDao {
 
     @Delete
     suspend fun deleteRoutine(routine: RoutineEntity)
+
+    @Query("SELECT * FROM routines WHERE id = :id")
+    suspend fun getRoutineById(id: Int): RoutineEntity
+
+    @Update
+    suspend fun updateRoutine(routine: RoutineEntity)
 }

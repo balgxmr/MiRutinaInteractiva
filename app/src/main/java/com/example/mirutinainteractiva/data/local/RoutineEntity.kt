@@ -9,5 +9,6 @@ data class RoutineEntity(
     val title: String,
     val description: String,
     val difficulty: String,
-    val imageRes: Int? = null
+    val imageRes: Int? = null,
+    val completed: Boolean = false
 )
