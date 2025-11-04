@@ -64,7 +64,8 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                             title = it.title,
                             description = it.description,
                             difficulty = it.difficulty,
-                            imageRes = it.imageRes
+                            imageRes = it.imageRes,
+                            completed = it.completed
                         )
                     }
                     .find { it.id == id }
@@ -77,6 +78,23 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                             navController.currentBackStackEntry?.savedStateHandle?.set("completedRoutine", it)
                             navController.navigate(Screen.Summary.route) {
                                 popUpTo(Screen.Welcome.route) { saveState = true }
+                                launchSingleTop = true
+                            }
+                        },
+                        onDelete = { routineToDelete ->
+                            // Eliminar en el ViewModel y volver al inicio
+                            routineViewModel.deleteRoutine(
+                                com.example.mirutinainteractiva.data.local.RoutineEntity(
+                                    id = routineToDelete.id,
+                                    title = routineToDelete.title,
+                                    description = routineToDelete.description,
+                                    difficulty = routineToDelete.difficulty,
+                                    imageRes = routineToDelete.imageRes,
+                                    completed = routineToDelete.completed
+                                )
+                            )
+                            navController.navigate(Screen.Welcome.route) {
+                                popUpTo(Screen.Welcome.route) { inclusive = true }
                                 launchSingleTop = true
                             }
                         }
@@ -132,6 +150,18 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                     onStartClick = { navController.navigate(Screen.RoutineSelection.route) },
                     onRoutineClick = { routine ->
                         navController.navigate("${Screen.RoutineExecution.route}/${routine.id}")
+                    },
+                    onDeleteRoutine = { routineToDelete ->
+                        routineViewModel.deleteRoutine(
+                            com.example.mirutinainteractiva.data.local.RoutineEntity(
+                                id = routineToDelete.id,
+                                title = routineToDelete.title,
+                                description = routineToDelete.description,
+                                difficulty = routineToDelete.difficulty,
+                                imageRes = routineToDelete.imageRes,
+                                completed = routineToDelete.completed
+                            )
+                        )
                     }
                 )
             }

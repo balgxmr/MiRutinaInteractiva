@@ -1,101 +1,103 @@
 package com.example.mirutinainteractiva.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.mirutinainteractiva.data.models.Routine
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoutineExecutionScreen(
-    routine: Routine, // la rutina seleccionada
-    onFinish: () -> Unit
+    routine: Routine,
+    onFinish: () -> Unit,
+    onDelete: (Routine) -> Unit
 ) {
-    // Simulación de pasos de la rutina
-    val steps = listOf(
-        "Preparar materiales",
-        "Realizar actividad principal",
-        "Guardar y limpiar"
-    )
+    var openDialog by remember { mutableStateOf(false) }
 
-    var currentStep by remember { mutableStateOf(0) }
+    val steps = listOf("Preparar materiales", "Realizar actividad principal", "Guardar y limpiar")
+    val checkedStates = remember { mutableStateListOf(*Array(steps.size) { false }) }
 
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(routine.title) },
+                actions = {
+                    IconButton(onClick = { openDialog = true }) {
+                        Icon(Icons.Default.Delete, contentDescription = "Eliminar rutina")
+                    }
+                }
+            )
+        }
+    ) { innerPadding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(24.dp),
-            verticalArrangement = Arrangement.SpaceBetween,
-            horizontalAlignment = Alignment.CenterHorizontally
+                .padding(innerPadding)
+                .padding(16.dp)
         ) {
-            // Encabezado
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = routine.title,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Dificultad: ${routine.difficulty}",
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            }
+            Text(routine.description, style = MaterialTheme.typography.bodyLarge)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text("Dificultad: ${routine.difficulty}", style = MaterialTheme.typography.bodyMedium)
 
-            // Imagen opcional
-            routine.imageRes?.let {
-                Image(
-                    painter = painterResource(id = it),
-                    contentDescription = routine.title,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                )
-            }
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Paso actual
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = "Paso ${currentStep + 1} de ${steps.size}",
-                    style = MaterialTheme.typography.titleMedium
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = steps[currentStep],
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center
-                )
-            }
+            Text("Pasos de la rutina", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
 
-            // Barra de progreso
-            LinearProgressIndicator(
-                progress = (currentStep + 1) / steps.size.toFloat(),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-            )
-
-            // Botón siguiente/finalizar
-            Button(
-                onClick = {
-                    if (currentStep < steps.lastIndex) {
-                        currentStep++
-                    } else {
-                        onFinish()
+            LazyColumn(modifier = Modifier.weight(1f)) {
+                itemsIndexed(steps) { index, step ->
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Checkbox(
+                            checked = checkedStates[index],
+                            onCheckedChange = { checkedStates[index] = it }
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(step, style = MaterialTheme.typography.bodyLarge)
                     }
-                },
-                modifier = Modifier.fillMaxWidth()
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Button(
+                onClick = { onFinish() },
+                modifier = Modifier.fillMaxWidth(),
+                enabled = checkedStates.all { it }
             ) {
-                Text(if (currentStep < steps.lastIndex) "Siguiente" else "Finalizar")
+                Text("Finalizar rutina")
             }
         }
+    }
+
+    // 🔹 Pop-up de confirmación
+    if (openDialog) {
+        AlertDialog(
+            onDismissRequest = { openDialog = false },
+            title = { Text("Confirmar eliminación") },
+            text = { Text("¿Seguro que deseas borrar la rutina actual?") },
+            confirmButton = {
+                TextButton(onClick = {
+                    onDelete(routine)
+                    openDialog = false
+                }) {
+                    Text("Sí, borrar", color = MaterialTheme.colorScheme.error)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { openDialog = false }) {
+                    Text("Cancelar")
+                }
+            }
+        )
     }
 }

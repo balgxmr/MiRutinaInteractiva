@@ -17,9 +17,10 @@ import com.example.mirutinainteractiva.ui.components.RoutineCard
 @Composable
 fun MainScreen(
     routines: List<Routine>,
-    completedRoutines: List<Routine>, // la lista detareas completadas
+    completedRoutines: List<Routine>, // la lista de tareas completadas
     onStartClick: () -> Unit,
-    onRoutineClick: (Routine) -> Unit
+    onRoutineClick: (Routine) -> Unit,
+    onDeleteRoutine: (Routine) -> Unit
 ) {
     Scaffold(
         floatingActionButton = {
@@ -92,9 +93,11 @@ fun MainScreen(
                     }
                 } else {
                     items(routines) { routine ->
-                        RoutineCard(routine = routine) {
-                            onRoutineClick(routine)
-                        }
+                        RoutineCard(
+                            routine = routine,
+                            onClick = { onRoutineClick(routine) },
+                            onDelete = { onDeleteRoutine(routine) }
+                        )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
@@ -112,33 +115,11 @@ fun MainScreen(
                     }
 
                     items(completedRoutines) { routine ->
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surfaceVariant
-                            )
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(16.dp)
-                            ) {
-                                Text(
-                                    text = routine.title,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = routine.description,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-                                Spacer(modifier = Modifier.height(4.dp))
-                                Text(
-                                    text = "Dificultad: ${routine.difficulty}",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
-                            }
-                        }
+                        RoutineCard(
+                            routine = routine,
+                            onClick = { /* opcional: abrir detalle */ },
+                            onDelete = { onDeleteRoutine(routine) }
+                        )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
