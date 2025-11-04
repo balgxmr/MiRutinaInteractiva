@@ -74,6 +74,7 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                         routine = it,
                         onFinish = {
                             routineViewModel.markRoutineAsCompleted(it.id)
+                            navController.currentBackStackEntry?.savedStateHandle?.set("completedRoutine", it)
                             navController.navigate(Screen.Summary.route) {
                                 popUpTo(Screen.Welcome.route) { saveState = true }
                                 launchSingleTop = true
@@ -84,8 +85,13 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
             }
 
             // Pantalla de progreso/resumen
-            composable(Screen.Summary.route) {
+            composable(Screen.Summary.route) { backStackEntry ->
+                val routine = navController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.get<Routine>("completedRoutine")
+
                 SummaryScreen(
+                    routine = routine,
                     onBackToHome = {
                         navController.navigate(Screen.Welcome.route) {
                             popUpTo(Screen.Welcome.route) { inclusive = true }
@@ -99,19 +105,21 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
             composable(Screen.Welcome.route) {
                 val routinesEntities = routineViewModel.routines.collectAsState(initial = emptyList()).value
 
+                val activeRoutines = routinesEntities.filter { !it.completed }
+                val completedCount = routinesEntities.count { it.completed }
+
                 MainScreen(
-                    routines = routinesEntities
-                        .filter { !it.completed } // 🔹 Solo las no completadas
-                        .map {
-                            Routine(
-                                id = it.id,
-                                title = it.title,
-                                description = it.description,
-                                difficulty = it.difficulty,
-                                imageRes = it.imageRes,
-                                completed = it.completed
-                            )
-                        },
+                    routines = activeRoutines.map {
+                        Routine(
+                            id = it.id,
+                            title = it.title,
+                            description = it.description,
+                            difficulty = it.difficulty,
+                            imageRes = it.imageRes,
+                            completed = it.completed
+                        )
+                    },
+                    completedCount = completedCount,
                     onStartClick = { navController.navigate(Screen.RoutineSelection.route) },
                     onRoutineClick = { routine ->
                         navController.navigate("${Screen.RoutineExecution.route}/${routine.id}")

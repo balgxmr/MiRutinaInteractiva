@@ -3,6 +3,8 @@ package com.example.mirutinainteractiva.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -15,53 +17,116 @@ import com.example.mirutinainteractiva.ui.components.RoutineCard
 @Composable
 fun MainScreen(
     routines: List<Routine>,
+    completedCount: Int,
     onStartClick: () -> Unit,
     onRoutineClick: (Routine) -> Unit
 ) {
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ) {
-        if (routines.isEmpty()) {
-            // Estado vacío
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
+    Scaffold(
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = onStartClick,
+                containerColor = MaterialTheme.colorScheme.primary
             ) {
-                Text(
-                    text = "Aún no has creado rutinas",
-                    style = MaterialTheme.typography.headlineSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(
-                    text = "Presiona el botón para comenzar a crear tu primera rutina",
-                    style = MaterialTheme.typography.bodyLarge,
-                    textAlign = TextAlign.Center
-                )
-
-                Spacer(modifier = Modifier.height(32.dp))
-
-                Button(onClick = onStartClick) {
-                    Text("Comenzar")
-                }
+                Icon(Icons.Default.Add, contentDescription = "Agregar rutina")
             }
-        } else {
-            // Mostrar rutinas en Cards
+        }
+    ) { innerPadding ->
+        Surface(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(innerPadding),
+            color = MaterialTheme.colorScheme.background
+        ) {
             LazyColumn(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                items(routines) { routine ->
-                    RoutineCard(routine = routine) {
-                        onRoutineClick(routine)
+                // 🔹 Header
+                item {
+                    Text(
+                        text = "Mi Rutina Interactiva",
+                        style = MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Organiza y completa tus rutinas diarias de forma divertida",
+                        style = MaterialTheme.typography.bodyMedium
+                    )
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+
+                // Rutinas activas
+                item {
+                    Text(
+                        text = "Rutinas activas",
+                        style = MaterialTheme.typography.titleMedium,
+                        color = MaterialTheme.colorScheme.secondary
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                }
+
+                if (routines.isEmpty()) {
+                    item {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "No hay rutinas activas",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                        Spacer(modifier = Modifier.height(16.dp))
+                    }
+                } else {
+                    items(routines) { routine ->
+                        RoutineCard(routine = routine) {
+                            onRoutineClick(routine)
+                        }
+                        Spacer(modifier = Modifier.height(8.dp))
+                    }
+                }
+
+                // Rutinas completadas
+                if (completedCount > 0) {
+                    item {
+                        Spacer(modifier = Modifier.height(24.dp))
+                        Text(
+                            text = "Rutinas completadas",
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.secondary
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surfaceVariant
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier.padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                Text(
+                                    text = "Has completado $completedCount rutinas en total",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
                     }
                 }
             }

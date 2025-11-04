@@ -7,9 +7,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.example.mirutinainteractiva.data.models.Routine
 
 @Composable
 fun SummaryScreen(
+    routine: Routine? = null,
     onBackToHome: () -> Unit
 ) {
     Surface(
@@ -32,9 +34,18 @@ fun SummaryScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            routine?.let {
+                Text(
+                    text = "Has finalizado la rutina: ${it.title}\nDificultad: ${it.difficulty}",
+                    style = MaterialTheme.typography.bodyLarge,
+                    textAlign = TextAlign.Center
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+
             Text(
-                text = "Has finalizado tu rutina con éxito.\n¡Sigue así para mantener tu progreso!",
-                style = MaterialTheme.typography.bodyLarge,
+                text = "¡Sigue así para mantener tu progreso!",
+                style = MaterialTheme.typography.bodyMedium,
                 textAlign = TextAlign.Center
             )
 
