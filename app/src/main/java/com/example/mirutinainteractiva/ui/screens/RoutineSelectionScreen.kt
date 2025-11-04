@@ -5,6 +5,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.mirutinainteractiva.ui.viewmodel.RoutineViewModel
 
@@ -18,6 +19,10 @@ fun RoutineSelectionScreen(
     var description by remember { mutableStateOf("") }
     var difficulty by remember { mutableStateOf("Fácil") }
     var expanded by remember { mutableStateOf(false) }
+
+    // Estados de error
+    var titleError by remember { mutableStateOf(false) }
+    var descriptionError by remember { mutableStateOf(false) }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -38,21 +43,51 @@ fun RoutineSelectionScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
+            // Campo título
             OutlinedTextField(
                 value = title,
-                onValueChange = { title = it },
+                onValueChange = {
+                    title = it
+                    if (it.isNotBlank()) titleError = false
+                },
                 label = { Text("Título") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = titleError
             )
+            if (titleError) {
+                Text(
+                    text = "El título es obligatorio",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
+            // Campo descripción
             OutlinedTextField(
                 value = description,
-                onValueChange = { description = it },
+                onValueChange = {
+                    description = it
+                    if (it.isNotBlank()) descriptionError = false
+                },
                 label = { Text("Descripción") },
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier.fillMaxWidth(),
+                isError = descriptionError
             )
+            if (descriptionError) {
+                Text(
+                    text = "La descripción es obligatoria",
+                    color = Color.Red,
+                    style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 4.dp)
+                )
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -90,7 +125,11 @@ fun RoutineSelectionScreen(
 
             Button(
                 onClick = {
-                    if (title.isNotBlank() && description.isNotBlank()) {
+                    // Validación
+                    titleError = title.isBlank()
+                    descriptionError = description.isBlank()
+
+                    if (!titleError && !descriptionError) {
                         routineViewModel.addRoutine(
                             title = title,
                             description = description,
