@@ -17,7 +17,7 @@ import com.example.mirutinainteractiva.ui.components.RoutineCard
 @Composable
 fun MainScreen(
     routines: List<Routine>,
-    completedCount: Int,
+    completedRoutines: List<Routine>, // la lista detareas completadas
     onStartClick: () -> Unit,
     onRoutineClick: (Routine) -> Unit
 ) {
@@ -42,7 +42,7 @@ fun MainScreen(
                     .fillMaxSize()
                     .padding(16.dp)
             ) {
-                // 🔹 Header
+                // Header
                 item {
                     Text(
                         text = "Mi Rutina Interactiva",
@@ -100,7 +100,7 @@ fun MainScreen(
                 }
 
                 // Rutinas completadas
-                if (completedCount > 0) {
+                if (completedRoutines.isNotEmpty()) {
                     item {
                         Spacer(modifier = Modifier.height(24.dp))
                         Text(
@@ -109,7 +109,9 @@ fun MainScreen(
                             color = MaterialTheme.colorScheme.secondary
                         )
                         Spacer(modifier = Modifier.height(8.dp))
+                    }
 
+                    items(completedRoutines) { routine ->
                         Card(
                             modifier = Modifier.fillMaxWidth(),
                             colors = CardDefaults.cardColors(
@@ -117,16 +119,27 @@ fun MainScreen(
                             )
                         ) {
                             Column(
-                                modifier = Modifier.padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
+                                modifier = Modifier.padding(16.dp)
                             ) {
                                 Text(
-                                    text = "Has completado $completedCount rutinas en total",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    textAlign = TextAlign.Center
+                                    text = routine.title,
+                                    style = MaterialTheme.typography.titleMedium,
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = routine.description,
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "Dificultad: ${routine.difficulty}",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.secondary
                                 )
                             }
                         }
+                        Spacer(modifier = Modifier.height(8.dp))
                     }
                 }
             }

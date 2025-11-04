@@ -106,7 +106,7 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                 val routinesEntities = routineViewModel.routines.collectAsState(initial = emptyList()).value
 
                 val activeRoutines = routinesEntities.filter { !it.completed }
-                val completedCount = routinesEntities.count { it.completed }
+                val completedRoutines = routinesEntities.filter { it.completed }
 
                 MainScreen(
                     routines = activeRoutines.map {
@@ -119,7 +119,16 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                             completed = it.completed
                         )
                     },
-                    completedCount = completedCount,
+                    completedRoutines = completedRoutines.map {
+                        Routine(
+                            id = it.id,
+                            title = it.title,
+                            description = it.description,
+                            difficulty = it.difficulty,
+                            imageRes = it.imageRes,
+                            completed = it.completed
+                        )
+                    },
                     onStartClick = { navController.navigate(Screen.RoutineSelection.route) },
                     onRoutineClick = { routine ->
                         navController.navigate("${Screen.RoutineExecution.route}/${routine.id}")
