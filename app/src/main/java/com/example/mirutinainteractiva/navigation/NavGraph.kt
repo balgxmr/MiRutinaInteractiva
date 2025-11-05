@@ -23,6 +23,8 @@ import com.example.mirutinainteractiva.ui.screens.RoutineExecutionScreen
 import com.example.mirutinainteractiva.ui.screens.RoutineSelectionScreen
 import com.example.mirutinainteractiva.ui.screens.SummaryScreen
 import com.example.mirutinainteractiva.ui.viewmodel.RoutineViewModel
+import androidx.compose.animation.*
+import androidx.compose.animation.core.tween
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     object Welcome : Screen("welcome", "Inicio", Icons.Default.Home)
@@ -41,7 +43,19 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
         NavHost(
             navController = navController,
             startDestination = Screen.Welcome.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            enterTransition = {
+                fadeIn(animationSpec = tween(500))
+            },
+            exitTransition = {
+                fadeOut(animationSpec = tween(500))
+            },
+            popEnterTransition = {
+                fadeIn(animationSpec = tween(500))
+            },
+            popExitTransition = {
+                fadeOut(animationSpec = tween(500))
+            }
         ) {
             // Pantalla de selección/creación de rutinas
             composable(Screen.RoutineSelection.route) {
