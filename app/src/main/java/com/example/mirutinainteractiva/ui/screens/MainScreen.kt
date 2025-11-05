@@ -6,7 +6,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
@@ -17,12 +17,24 @@ import com.example.mirutinainteractiva.ui.components.RoutineCard
 @Composable
 fun MainScreen(
     routines: List<Routine>,
-    completedRoutines: List<Routine>, // la lista de tareas completadas
+    completedRoutines: List<Routine>,
     onStartClick: () -> Unit,
     onRoutineClick: (Routine) -> Unit,
     onDeleteRoutine: (Routine) -> Unit
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    var deletedRoutineTitle by remember { mutableStateOf<String?>(null) }
+
+    // Mostrar SnackBar cuando se borra una rutina
+    LaunchedEffect(deletedRoutineTitle) {
+        deletedRoutineTitle?.let {
+            snackbarHostState.showSnackbar("Rutina \"$it\" eliminada")
+            deletedRoutineTitle = null
+        }
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
                 onClick = onStartClick,
@@ -96,7 +108,10 @@ fun MainScreen(
                         RoutineCard(
                             routine = routine,
                             onClick = { onRoutineClick(routine) },
-                            onDelete = { onDeleteRoutine(routine) }
+                            onDelete = {
+                                onDeleteRoutine(routine)
+                                deletedRoutineTitle = routine.title
+                            }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
@@ -118,7 +133,10 @@ fun MainScreen(
                         RoutineCard(
                             routine = routine,
                             onClick = { /* opcional: abrir detalle */ },
-                            onDelete = { onDeleteRoutine(routine) }
+                            onDelete = {
+                                onDeleteRoutine(routine)
+                                deletedRoutineTitle = routine.title
+                            }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
                     }
