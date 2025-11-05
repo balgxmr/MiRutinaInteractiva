@@ -15,14 +15,15 @@ class RoutineViewModel(private val repository: RoutineRepository) : ViewModel() 
         repository.getAllRoutines()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun addRoutine(title: String, description: String, difficulty: String, imageRes: Int? = null) {
+    fun addRoutine(title: String, description: String, difficulty: String, imageRes: Int? = null, completed: Boolean = false) {
         viewModelScope.launch {
             repository.insertRoutine(
                 RoutineEntity(
                     title = title,
                     description = description,
                     difficulty = difficulty,
-                    imageRes = imageRes
+                    imageRes = imageRes,
+                    completed = completed
                 )
             )
         }

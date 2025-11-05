@@ -169,7 +169,8 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                             title = routineToRestore.title,
                             description = routineToRestore.description,
                             difficulty = routineToRestore.difficulty,
-                            imageRes = routineToRestore.imageRes
+                            imageRes = routineToRestore.imageRes,
+                            completed = routineToRestore.completed
                         )
                     }
                 )
