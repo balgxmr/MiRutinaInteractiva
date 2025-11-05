@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import com.example.mirutinainteractiva.data.local.RoutineEntity
 import com.example.mirutinainteractiva.data.models.Routine
 import com.example.mirutinainteractiva.ui.components.BottomBar
 import com.example.mirutinainteractiva.ui.screens.MainScreen
@@ -153,7 +154,7 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                     },
                     onDeleteRoutine = { routineToDelete ->
                         routineViewModel.deleteRoutine(
-                            com.example.mirutinainteractiva.data.local.RoutineEntity(
+                            RoutineEntity(
                                 id = routineToDelete.id,
                                 title = routineToDelete.title,
                                 description = routineToDelete.description,
@@ -162,8 +163,17 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                                 completed = routineToDelete.completed
                             )
                         )
+                    },
+                    onRestoreRoutine = { routineToRestore ->
+                        routineViewModel.addRoutine(
+                            title = routineToRestore.title,
+                            description = routineToRestore.description,
+                            difficulty = routineToRestore.difficulty,
+                            imageRes = routineToRestore.imageRes
+                        )
                     }
                 )
+
             }
         }
     }

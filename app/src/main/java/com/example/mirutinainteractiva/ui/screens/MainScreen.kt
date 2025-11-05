@@ -20,16 +20,23 @@ fun MainScreen(
     completedRoutines: List<Routine>,
     onStartClick: () -> Unit,
     onRoutineClick: (Routine) -> Unit,
-    onDeleteRoutine: (Routine) -> Unit
+    onDeleteRoutine: (Routine) -> Unit,
+    onRestoreRoutine: (Routine) -> Unit
 ) {
     val snackbarHostState = remember { SnackbarHostState() }
-    var deletedRoutineTitle by remember { mutableStateOf<String?>(null) }
+    var recentlyDeletedRoutine by remember { mutableStateOf<Routine?>(null) }
 
     // Mostrar SnackBar cuando se borra una rutina
-    LaunchedEffect(deletedRoutineTitle) {
-        deletedRoutineTitle?.let {
-            snackbarHostState.showSnackbar("Rutina \"$it\" eliminada")
-            deletedRoutineTitle = null
+    LaunchedEffect(recentlyDeletedRoutine) {
+        recentlyDeletedRoutine?.let { routine ->
+            val result = snackbarHostState.showSnackbar(
+                message = "Rutina \"${routine.title}\" eliminada",
+                actionLabel = "Deshacer"
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                onRestoreRoutine(routine)
+            }
+            recentlyDeletedRoutine = null
         }
     }
 
@@ -110,7 +117,7 @@ fun MainScreen(
                             onClick = { onRoutineClick(routine) },
                             onDelete = {
                                 onDeleteRoutine(routine)
-                                deletedRoutineTitle = routine.title
+                                recentlyDeletedRoutine = routine // guarda para deshacer
                             }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
@@ -132,10 +139,10 @@ fun MainScreen(
                     items(completedRoutines) { routine ->
                         RoutineCard(
                             routine = routine,
-                            onClick = { /* opcional: abrir detalle */ },
+                            onClick = { /* opcional */ },
                             onDelete = {
                                 onDeleteRoutine(routine)
-                                deletedRoutineTitle = routine.title
+                                recentlyDeletedRoutine = routine // guarda para deshacer
                             }
                         )
                         Spacer(modifier = Modifier.height(8.dp))
