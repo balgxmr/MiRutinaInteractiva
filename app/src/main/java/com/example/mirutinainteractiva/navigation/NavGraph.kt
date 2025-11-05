@@ -74,6 +74,7 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                 routine?.let {
                     RoutineExecutionScreen(
                         routine = it,
+                        routineViewModel = routineViewModel,
                         onFinish = {
                             routineViewModel.markRoutineAsCompleted(it.id)
                             navController.currentBackStackEntry?.savedStateHandle?.set("completedRoutine", it)

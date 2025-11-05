@@ -9,7 +9,7 @@ interface RoutineDao {
     fun getAllRoutines(): Flow<List<RoutineEntity>>
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insertRoutine(routine: RoutineEntity)
+    suspend fun insertRoutine(routine: RoutineEntity): Long
 
     @Delete
     suspend fun deleteRoutine(routine: RoutineEntity)
@@ -19,4 +19,18 @@ interface RoutineDao {
 
     @Update
     suspend fun updateRoutine(routine: RoutineEntity)
+
+    // Subtasks
+    @Insert
+    suspend fun insertSubtask(subtask: SubtaskEntity)
+
+    @Update
+    suspend fun updateSubtask(subtask: SubtaskEntity)
+
+    @Delete
+    suspend fun deleteSubtask(subtask: SubtaskEntity)
+
+    @Transaction
+    @Query("SELECT * FROM routines WHERE id = :routineId")
+    fun getRoutineWithSubtasks(routineId: Int): Flow<RoutineWithSubtasks>
 }

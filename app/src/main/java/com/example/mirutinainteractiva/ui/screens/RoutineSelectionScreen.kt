@@ -1,6 +1,8 @@
 package com.example.mirutinainteractiva.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,6 +25,10 @@ fun RoutineSelectionScreen(
     // Estados de error
     var titleError by remember { mutableStateOf(false) }
     var descriptionError by remember { mutableStateOf(false) }
+
+    // Subtareas locales
+    var newSubtaskTitle by remember { mutableStateOf("") }
+    val subtasks = remember { mutableStateListOf<String>() }
 
     Surface(
         modifier = Modifier.fillMaxSize(),
@@ -123,6 +129,47 @@ fun RoutineSelectionScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            // Subtareas
+            Text("Subtareas", style = MaterialTheme.typography.titleMedium)
+            Spacer(modifier = Modifier.height(8.dp))
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                OutlinedTextField(
+                    value = newSubtaskTitle,
+                    onValueChange = { newSubtaskTitle = it },
+                    label = { Text("Nueva subtarea") },
+                    modifier = Modifier.weight(1f)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                IconButton(
+                    onClick = {
+                        if (newSubtaskTitle.isNotBlank()) {
+                            subtasks.add(newSubtaskTitle)
+                            newSubtaskTitle = ""
+                        }
+                    }
+                ) {
+                    Icon(Icons.Default.Add, contentDescription = "Agregar subtarea")
+                }
+            }
+
+            // Lista de subtareas añadidas
+            subtasks.forEach { subtask ->
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text("• $subtask", style = MaterialTheme.typography.bodyLarge)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
             Button(
                 onClick = {
                     // Validación
@@ -130,10 +177,12 @@ fun RoutineSelectionScreen(
                     descriptionError = description.isBlank()
 
                     if (!titleError && !descriptionError) {
-                        routineViewModel.addRoutine(
+                        // Guardar rutina y subtareas
+                        routineViewModel.addRoutineWithSubtasks(
                             title = title,
                             description = description,
-                            difficulty = difficulty
+                            difficulty = difficulty,
+                            subtasks = subtasks.toList()
                         )
                         onRoutineCreated()
                     }
