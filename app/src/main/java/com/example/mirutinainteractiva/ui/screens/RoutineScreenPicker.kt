@@ -1,5 +1,6 @@
 package com.example.mirutinainteractiva.ui.screens
 
+import android.os.Parcelable
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -10,11 +11,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.mirutinainteractiva.data.local.RoutineEntity
 import com.example.mirutinainteractiva.ui.viewmodel.RoutineViewModel
+import kotlinx.android.parcel.Parcelize
 
 @Composable
 fun RoutinePickerScreen(
+    navController: NavController,
     routineViewModel: RoutineViewModel,
     onRoutineSelected: (RoutineEntity) -> Unit,
     onCreateRoutineClick: () -> Unit
@@ -57,27 +61,8 @@ fun RoutinePickerScreen(
                     .fillMaxWidth()
                     .padding(vertical = 8.dp)
                     .clickable {
-                        val difficulty = when {
-                            routine.subtasks.size <= 3 -> "Fácil"
-                            routine.subtasks.size <= 5 -> "Intermedio"
-                            else -> "Difícil"
-                        }
-                        routineViewModel.addRoutineWithSubtasks(
-                            title = routine.title,
-                            description = routine.description,
-                            difficulty = difficulty,
-                            subtasks = routine.subtasks
-                        )
-                        // Navegar a ejecución
-                        onRoutineSelected(
-                            RoutineEntity(
-                                title = routine.title,
-                                description = routine.description,
-                                difficulty = difficulty,
-                                isPredefined = true,
-                                timeOfDay = "Mañana"
-                            )
-                        )
+                        navController.currentBackStackEntry?.savedStateHandle?.set("selectedRoutine", routine)
+                        navController.navigate("routineDetail")
                     },
                 colors = CardDefaults.cardColors(
                     containerColor = MaterialTheme.colorScheme.surfaceVariant
@@ -85,14 +70,7 @@ fun RoutinePickerScreen(
             ) {
                 Column(modifier = Modifier.padding(16.dp)) {
                     Text(routine.title, style = MaterialTheme.typography.titleMedium)
-                    Spacer(modifier = Modifier.height(4.dp))
                     Text(routine.description, style = MaterialTheme.typography.bodyMedium)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = "Tareas: ${routine.subtasks.size}",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.secondary
-                    )
                 }
             }
         }
@@ -111,8 +89,9 @@ fun RoutinePickerScreen(
     }
 }
 
+@Parcelize
 data class PredefinedRoutine(
     val title: String,
     val description: String,
     val subtasks: List<String>
-)
+) : Parcelable

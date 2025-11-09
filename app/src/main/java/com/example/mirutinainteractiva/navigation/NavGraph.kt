@@ -26,6 +26,8 @@ import com.example.mirutinainteractiva.ui.screens.SummaryScreen
 import com.example.mirutinainteractiva.ui.viewmodel.RoutineViewModel
 import androidx.compose.animation.*
 import androidx.compose.animation.core.tween
+import com.example.mirutinainteractiva.ui.screens.PredefinedRoutine
+import com.example.mirutinainteractiva.ui.screens.RoutineDetailScreen
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     object Welcome : Screen("welcome", "Inicio", Icons.Default.Home)
@@ -62,6 +64,7 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
             // Pantalla para elegir rutina preestablecida
             composable(Screen.RoutinePicker.route) {
                 RoutinePickerScreen(
+                    navController = navController,
                     routineViewModel = routineViewModel,
                     onRoutineSelected = { routine ->
                         navController.navigate("${Screen.RoutineExecution.route}/${routine.id}")
@@ -207,6 +210,37 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                         )
                     }
                 )
+            }
+
+            // Pantalla para elegir rutina preestablecida
+            composable(Screen.RoutinePicker.route) {
+                RoutinePickerScreen(
+                    navController = navController, // 👈 ahora se pasa
+                    routineViewModel = routineViewModel,
+                    onRoutineSelected = { routine ->
+                        navController.navigate("${Screen.RoutineExecution.route}/${routine.id}")
+                    },
+                    onCreateRoutineClick = {
+                        navController.navigate(Screen.RoutineCreate.route)
+                    }
+                )
+            }
+
+            // Pantalla de detalle de rutina preestablecida
+            composable("routineDetail") {
+                val routine = navController.previousBackStackEntry
+                    ?.savedStateHandle
+                    ?.get<PredefinedRoutine>("selectedRoutine")
+
+                routine?.let {
+                    RoutineDetailScreen(
+                        routine = it,
+                        routineViewModel = routineViewModel,
+                        onStartRoutine = { entity ->
+                            navController.navigate("${Screen.RoutineExecution.route}/${entity.id}")
+                        }
+                    )
+                } ?: Text("No se encontró la rutina seleccionada")
             }
         }
     }
