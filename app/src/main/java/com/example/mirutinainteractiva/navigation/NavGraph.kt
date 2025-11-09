@@ -182,7 +182,7 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                             completed = it.completed
                         )
                     },
-                    onStartClick = { navController.navigate(Screen.RoutinePicker.route) }, // 👈 ahora va al picker
+                    onStartClick = { navController.navigate(Screen.RoutinePicker.route) },
                     onRoutineClick = { routine ->
                         navController.navigate("${Screen.RoutineExecution.route}/${routine.id}")
                     },
@@ -236,11 +236,9 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                     RoutineDetailScreen(
                         routine = it,
                         routineViewModel = routineViewModel,
-                        onStartRoutine = { entity ->
-                            navController.navigate("${Screen.RoutineExecution.route}/${entity.id}")
-                        }
+                        navController = navController
                     )
-                } ?: Text("No se encontró la rutina seleccionada")
+                }
             }
         }
     }
