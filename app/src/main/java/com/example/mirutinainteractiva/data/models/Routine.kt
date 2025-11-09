@@ -10,5 +10,6 @@ data class Routine(
     val description: String,
     val difficulty: String,
     val imageRes: Int? = null,
-    val completed: Boolean = false
+    val completed: Boolean = false,
+    val subtasks: List<String> = emptyList()
 ) : Parcelable

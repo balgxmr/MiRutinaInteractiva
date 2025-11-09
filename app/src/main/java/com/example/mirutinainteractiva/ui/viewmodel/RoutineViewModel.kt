@@ -6,6 +6,7 @@ import com.example.mirutinainteractiva.data.local.RoutineEntity
 import com.example.mirutinainteractiva.repository.RoutineRepository
 import com.example.mirutinainteractiva.data.local.SubtaskEntity
 import com.example.mirutinainteractiva.data.local.RoutineWithSubtasks
+import com.example.mirutinainteractiva.data.models.Routine
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -17,6 +18,10 @@ class RoutineViewModel(private val repository: RoutineRepository) : ViewModel() 
     val routines: StateFlow<List<RoutineEntity>> =
         repository.getAllRoutines()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    init {
+        preloadDefaultRoutines()
+    }
 
     fun addRoutine(title: String, description: String, difficulty: String, imageRes: Int? = null, completed: Boolean = false) {
         viewModelScope.launch {
@@ -87,6 +92,71 @@ class RoutineViewModel(private val repository: RoutineRepository) : ViewModel() 
                         title = subtaskTitle
                     )
                 )
+            }
+        }
+    }
+
+    private fun calculateDifficulty(subtaskCount: Int): String {
+        return when {
+            subtaskCount >= 7 -> "Difícil"
+            subtaskCount >= 5 -> "Intermedio"
+            else -> "Fácil"
+        }
+    }
+
+    // Cargar rutinas preestablecidas
+    fun preloadDefaultRoutines() {
+        viewModelScope.launch {
+            val existing = repository.getAllRoutines().stateIn(viewModelScope, SharingStarted.Lazily, emptyList()).value
+            if (existing.isEmpty()) {
+                val predefinedRoutines = listOf(
+                    Routine(
+                        id = 1,
+                        title = "Hacer la cama",
+                        description = "Ordenar las sábanas y colocar las almohadas.",
+                        difficulty = calculateDifficulty(3),
+                        imageRes = null,
+                        completed = false,
+                        subtasks = listOf("Sacar las sábanas", "Doblar la cobija", "Poner la almohada")
+                    ),
+                    Routine(
+                        id = 2,
+                        title = "Bañarse",
+                        description = "Lavarse bien para empezar el día.",
+                        difficulty = calculateDifficulty(5),
+                        imageRes = null,
+                        completed = false,
+                        subtasks = listOf("Abrir la ducha", "Usar jabón", "Enjuagarse", "Secarse", "Vestirse")
+                    ),
+                    Routine(
+                        id = 3,
+                        title = "Hacer la tarea",
+                        description = "Completa tus deberes escolares.",
+                        difficulty = calculateDifficulty(7),
+                        imageRes = null,
+                        completed = false,
+                        subtasks = listOf(
+                            "Preparar el cuaderno",
+                            "Leer instrucciones",
+                            "Resolver ejercicios",
+                            "Revisar errores",
+                            "Guardar materiales",
+                            "Organizar mochila",
+                            "Lavar manos"
+                        )
+                    )
+                )
+
+                predefinedRoutines.forEach { routine ->
+                    addRoutineWithSubtasks(
+                        title = routine.title,
+                        description = routine.description,
+                        difficulty = routine.difficulty,
+                        imageRes = routine.imageRes,
+                        completed = routine.completed,
+                        subtasks = routine.subtasks
+                    )
+                }
             }
         }
     }
