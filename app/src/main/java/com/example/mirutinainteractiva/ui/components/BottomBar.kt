@@ -12,7 +12,7 @@ import androidx.compose.runtime.getValue
 fun BottomBar(navController: NavController) {
     val items = listOf(
         Screen.Welcome,
-        Screen.RoutineSelection,
+        Screen.RoutinePicker,
         Screen.Summary
     )
 

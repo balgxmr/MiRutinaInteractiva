@@ -38,8 +38,8 @@ class RoutineViewModel(private val repository: RoutineRepository) : ViewModel() 
                     difficulty = difficulty,
                     imageRes = imageRes,
                     completed = completed,
-                    isPredefined = false, // 👈 explícito
-                    timeOfDay = timeOfDay   // 👈 explícito
+                    isPredefined = false,
+                    timeOfDay = timeOfDay
                 )
             )
         }
@@ -91,8 +91,8 @@ class RoutineViewModel(private val repository: RoutineRepository) : ViewModel() 
                     difficulty = difficulty,
                     imageRes = imageRes,
                     completed = completed,
-                    isPredefined = false, // 👈 explícito
-                    timeOfDay = timeOfDay   // 👈 explícito
+                    isPredefined = false,
+                    timeOfDay = timeOfDay
                 )
             ).toInt()
 

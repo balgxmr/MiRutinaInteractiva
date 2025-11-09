@@ -20,7 +20,8 @@ import com.example.mirutinainteractiva.data.models.Routine
 import com.example.mirutinainteractiva.ui.components.BottomBar
 import com.example.mirutinainteractiva.ui.screens.MainScreen
 import com.example.mirutinainteractiva.ui.screens.RoutineExecutionScreen
-import com.example.mirutinainteractiva.ui.screens.RoutineSelectionScreen
+import com.example.mirutinainteractiva.ui.screens.CreateRoutineScreen
+import com.example.mirutinainteractiva.ui.screens.RoutinePickerScreen
 import com.example.mirutinainteractiva.ui.screens.SummaryScreen
 import com.example.mirutinainteractiva.ui.viewmodel.RoutineViewModel
 import androidx.compose.animation.*
@@ -28,7 +29,8 @@ import androidx.compose.animation.core.tween
 
 sealed class Screen(val route: String, val label: String, val icon: ImageVector) {
     object Welcome : Screen("welcome", "Inicio", Icons.Default.Home)
-    object RoutineSelection : Screen("routineSelection", "Rutinas", Icons.Default.List)
+    object RoutinePicker : Screen("routinePicker", "Rutinas", Icons.Default.List)
+    object RoutineCreate : Screen("routineCreate", "Crear rutina", Icons.Default.List)
     object Summary : Screen("summary", "Progreso", Icons.Default.Favorite)
     object RoutineExecution : Screen("routineExecution", "Ejecutar", Icons.Default.PlayArrow) {
         const val ROUTE_WITH_ARG = "routineExecution/{routineId}"
@@ -57,9 +59,22 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                 fadeOut(animationSpec = tween(500))
             }
         ) {
-            // Pantalla de selección/creación de rutinas
-            composable(Screen.RoutineSelection.route) {
-                RoutineSelectionScreen(
+            // Pantalla para elegir rutina preestablecida
+            composable(Screen.RoutinePicker.route) {
+                RoutinePickerScreen(
+                    routineViewModel = routineViewModel,
+                    onRoutineSelected = { routine ->
+                        navController.navigate("${Screen.RoutineExecution.route}/${routine.id}")
+                    },
+                    onCreateRoutineClick = {
+                        navController.navigate(Screen.RoutineCreate.route)
+                    }
+                )
+            }
+
+            // Pantalla para crear rutina personalizada
+            composable(Screen.RoutineCreate.route) {
+                CreateRoutineScreen(
                     routineViewModel = routineViewModel,
                     onRoutineCreated = {
                         navController.navigate(Screen.Welcome.route) {
@@ -71,7 +86,7 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
 
             // Pantalla de ejecución de rutina con argumento ID
             composable(Screen.RoutineExecution.ROUTE_WITH_ARG) { backStackEntry ->
-                val id = backStackEntry.arguments?.getString("routineId")?.toInt()
+                val id = backStackEntry.arguments?.getString("routineId")?.toIntOrNull()
                 val routine = routineViewModel.routines.collectAsState(initial = emptyList()).value
                     .map {
                         Routine(
@@ -98,9 +113,8 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                             }
                         },
                         onDelete = { routineToDelete ->
-                            // Eliminar en el ViewModel y volver al inicio
                             routineViewModel.deleteRoutine(
-                                com.example.mirutinainteractiva.data.local.RoutineEntity(
+                                RoutineEntity(
                                     id = routineToDelete.id,
                                     title = routineToDelete.title,
                                     description = routineToDelete.description,
@@ -108,7 +122,7 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                                     imageRes = routineToDelete.imageRes,
                                     completed = routineToDelete.completed,
                                     isPredefined = false,
-                                    timeOfDay = timeOfDay
+                                    timeOfDay = "Mañana" // valor por defecto
                                 )
                             )
                             navController.navigate(Screen.Welcome.route) {
@@ -121,7 +135,7 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
             }
 
             // Pantalla de progreso/resumen
-            composable(Screen.Summary.route) { backStackEntry ->
+            composable(Screen.Summary.route) {
                 val routine = navController.previousBackStackEntry
                     ?.savedStateHandle
                     ?.get<Routine>("completedRoutine")
@@ -165,7 +179,7 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                             completed = it.completed
                         )
                     },
-                    onStartClick = { navController.navigate(Screen.RoutineSelection.route) },
+                    onStartClick = { navController.navigate(Screen.RoutinePicker.route) }, // 👈 ahora va al picker
                     onRoutineClick = { routine ->
                         navController.navigate("${Screen.RoutineExecution.route}/${routine.id}")
                     },
@@ -179,7 +193,7 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                                 imageRes = routineToDelete.imageRes,
                                 completed = routineToDelete.completed,
                                 isPredefined = false,
-                                timeOfDay = timeOfDay
+                                timeOfDay = "Mañana" // valor por defecto
                             )
                         )
                     },
@@ -193,7 +207,6 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                         )
                     }
                 )
-
             }
         }
     }

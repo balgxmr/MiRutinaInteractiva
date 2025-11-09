@@ -1,9 +1,7 @@
 package com.example.mirutinainteractiva.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
@@ -16,29 +14,10 @@ import com.example.mirutinainteractiva.ui.viewmodel.RoutineViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RoutineSelectionScreen(
+fun CreateRoutineScreen(
     routineViewModel: RoutineViewModel,
     onRoutineCreated: () -> Unit
 ) {
-    // Mostrar rutinas preestablecidas primero
-    val predefinedRoutines = listOf(
-        PredefinedRoutine(
-            title = "Rutina de la mañana",
-            description = "Despiértate, tiende la cama, lávate los dientes y desayuna.",
-            subtasks = listOf("Despertarse", "Tender la cama", "Lavarse los dientes", "Desayunar", "Vestirse")
-        ),
-        PredefinedRoutine(
-            title = "Hora de dormir",
-            description = "Prepara todo para dormir bien.",
-            subtasks = listOf("Ponerse pijama", "Cepillarse los dientes", "Leer un cuento")
-        ),
-        PredefinedRoutine(
-            title = "Limpieza del cuarto",
-            description = "Organiza tu habitación y deja todo limpio.",
-            subtasks = listOf("Guardar juguetes", "Tender la cama", "Limpiar escritorio", "Barrer", "Pasar paño", "Botar basura", "Ventilar la habitación")
-        )
-    )
-
     var showCustomRoutineForm by remember { mutableStateOf(false) }
 
     // Estados del formulario (para la rutina personalizada)
@@ -64,53 +43,6 @@ fun RoutineSelectionScreen(
             verticalArrangement = Arrangement.Top,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            item {
-                Text(
-                    text = "Selecciona una rutina preestablecida",
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Spacer(modifier = Modifier.height(16.dp))
-            }
-
-            // Mostrar rutinas predefinidas
-            items(predefinedRoutines) { routine ->
-                Card(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp)
-                        .clickable {
-                            val difficulty = when {
-                                routine.subtasks.size <= 3 -> "Fácil"
-                                routine.subtasks.size <= 5 -> "Intermedio"
-                                else -> "Difícil"
-                            }
-                            routineViewModel.addRoutineWithSubtasks(
-                                title = routine.title,
-                                description = routine.description,
-                                difficulty = difficulty,
-                                subtasks = routine.subtasks
-                            )
-                            onRoutineCreated()
-                        },
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant
-                    )
-                ) {
-                    Column(modifier = Modifier.padding(16.dp)) {
-                        Text(routine.title, style = MaterialTheme.typography.titleMedium)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(routine.description, style = MaterialTheme.typography.bodyMedium)
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "Tareas: ${routine.subtasks.size}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.secondary
-                        )
-                    }
-                }
-            }
-
             // Botón para mostrar el formulario personalizado
             item {
                 Spacer(modifier = Modifier.height(24.dp))
@@ -269,9 +201,3 @@ fun RoutineSelectionScreen(
         }
     }
 }
-
-data class PredefinedRoutine(
-    val title: String,
-    val description: String,
-    val subtasks: List<String>
-)
