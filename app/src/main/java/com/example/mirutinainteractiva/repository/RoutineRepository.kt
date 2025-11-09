@@ -10,6 +10,8 @@ class RoutineRepository(private val dao: RoutineDao) {
 
     fun getAllRoutines(): Flow<List<RoutineEntity>> = dao.getAllRoutines()
 
+    suspend fun getAllRoutinesOnce(): List<RoutineEntity> = dao.getAllRoutinesOnce()
+
     suspend fun insertRoutine(routine: RoutineEntity): Long {
         return dao.insertRoutine(routine)
     }
@@ -34,5 +36,4 @@ class RoutineRepository(private val dao: RoutineDao) {
 
     fun getRoutineWithSubtasks(routineId: Int): Flow<RoutineWithSubtasks> =
         dao.getRoutineWithSubtasks(routineId)
-
 }

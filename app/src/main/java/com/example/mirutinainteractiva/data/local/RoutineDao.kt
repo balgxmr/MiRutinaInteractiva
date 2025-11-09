@@ -8,6 +8,8 @@ interface RoutineDao {
     @Query("SELECT * FROM routines")
     fun getAllRoutines(): Flow<List<RoutineEntity>>
 
+    @Query("SELECT * FROM routines")
+    suspend fun getAllRoutinesOnce(): List<RoutineEntity>
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertRoutine(routine: RoutineEntity): Long
 

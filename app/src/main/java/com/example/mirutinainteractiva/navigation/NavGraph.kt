@@ -106,7 +106,9 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                                     description = routineToDelete.description,
                                     difficulty = routineToDelete.difficulty,
                                     imageRes = routineToDelete.imageRes,
-                                    completed = routineToDelete.completed
+                                    completed = routineToDelete.completed,
+                                    isPredefined = false,
+                                    timeOfDay = timeOfDay
                                 )
                             )
                             navController.navigate(Screen.Welcome.route) {
@@ -175,7 +177,9 @@ fun AppNavGraph(navController: NavHostController, routineViewModel: RoutineViewM
                                 description = routineToDelete.description,
                                 difficulty = routineToDelete.difficulty,
                                 imageRes = routineToDelete.imageRes,
-                                completed = routineToDelete.completed
+                                completed = routineToDelete.completed,
+                                isPredefined = false,
+                                timeOfDay = timeOfDay
                             )
                         )
                     },

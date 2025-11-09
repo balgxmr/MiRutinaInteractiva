@@ -6,7 +6,6 @@ import com.example.mirutinainteractiva.data.local.RoutineEntity
 import com.example.mirutinainteractiva.repository.RoutineRepository
 import com.example.mirutinainteractiva.data.local.SubtaskEntity
 import com.example.mirutinainteractiva.data.local.RoutineWithSubtasks
-import com.example.mirutinainteractiva.data.models.Routine
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
@@ -23,7 +22,14 @@ class RoutineViewModel(private val repository: RoutineRepository) : ViewModel() 
         preloadDefaultRoutines()
     }
 
-    fun addRoutine(title: String, description: String, difficulty: String, imageRes: Int? = null, completed: Boolean = false) {
+    fun addRoutine(
+        title: String,
+        description: String,
+        difficulty: String,
+        imageRes: Int? = null,
+        completed: Boolean = false,
+        timeOfDay: String = "Mañana"
+    ) {
         viewModelScope.launch {
             repository.insertRoutine(
                 RoutineEntity(
@@ -31,7 +37,9 @@ class RoutineViewModel(private val repository: RoutineRepository) : ViewModel() 
                     description = description,
                     difficulty = difficulty,
                     imageRes = imageRes,
-                    completed = completed
+                    completed = completed,
+                    isPredefined = false, // 👈 explícito
+                    timeOfDay = timeOfDay   // 👈 explícito
                 )
             )
         }
@@ -72,7 +80,8 @@ class RoutineViewModel(private val repository: RoutineRepository) : ViewModel() 
         difficulty: String,
         imageRes: Int? = null,
         completed: Boolean = false,
-        subtasks: List<String>
+        subtasks: List<String>,
+        timeOfDay: String = "Mañana"
     ) {
         viewModelScope.launch {
             val routineId = repository.insertRoutine(
@@ -81,7 +90,9 @@ class RoutineViewModel(private val repository: RoutineRepository) : ViewModel() 
                     description = description,
                     difficulty = difficulty,
                     imageRes = imageRes,
-                    completed = completed
+                    completed = completed,
+                    isPredefined = false, // 👈 explícito
+                    timeOfDay = timeOfDay   // 👈 explícito
                 )
             ).toInt()
 
@@ -107,35 +118,44 @@ class RoutineViewModel(private val repository: RoutineRepository) : ViewModel() 
     // Cargar rutinas preestablecidas
     fun preloadDefaultRoutines() {
         viewModelScope.launch {
-            val existing = repository.getAllRoutines().stateIn(viewModelScope, SharingStarted.Lazily, emptyList()).value
+            val existing = repository.getAllRoutinesOnce()
             if (existing.isEmpty()) {
                 val predefinedRoutines = listOf(
-                    Routine(
-                        id = 1,
+                    RoutineEntity(
                         title = "Hacer la cama",
                         description = "Ordenar las sábanas y colocar las almohadas.",
                         difficulty = calculateDifficulty(3),
                         imageRes = null,
                         completed = false,
-                        subtasks = listOf("Sacar las sábanas", "Doblar la cobija", "Poner la almohada")
+                        isPredefined = true,
+                        timeOfDay = "Mañana"
                     ),
-                    Routine(
-                        id = 2,
+                    RoutineEntity(
                         title = "Bañarse",
                         description = "Lavarse bien para empezar el día.",
                         difficulty = calculateDifficulty(5),
                         imageRes = null,
                         completed = false,
-                        subtasks = listOf("Abrir la ducha", "Usar jabón", "Enjuagarse", "Secarse", "Vestirse")
+                        isPredefined = true,
+                        timeOfDay = "Mañana"
                     ),
-                    Routine(
-                        id = 3,
+                    RoutineEntity(
                         title = "Hacer la tarea",
                         description = "Completa tus deberes escolares.",
                         difficulty = calculateDifficulty(7),
                         imageRes = null,
                         completed = false,
-                        subtasks = listOf(
+                        isPredefined = true,
+                        timeOfDay = "Tarde"
+                    )
+                )
+
+                predefinedRoutines.forEach { routine ->
+                    val routineId = repository.insertRoutine(routine).toInt()
+                    val subtasks = when (routine.title) {
+                        "Hacer la cama" -> listOf("Sacar las sábanas", "Doblar la cobija", "Poner la almohada")
+                        "Bañarse" -> listOf("Abrir la ducha", "Usar jabón", "Enjuagarse", "Secarse", "Vestirse")
+                        "Hacer la tarea" -> listOf(
                             "Preparar el cuaderno",
                             "Leer instrucciones",
                             "Resolver ejercicios",
@@ -144,18 +164,11 @@ class RoutineViewModel(private val repository: RoutineRepository) : ViewModel() 
                             "Organizar mochila",
                             "Lavar manos"
                         )
-                    )
-                )
-
-                predefinedRoutines.forEach { routine ->
-                    addRoutineWithSubtasks(
-                        title = routine.title,
-                        description = routine.description,
-                        difficulty = routine.difficulty,
-                        imageRes = routine.imageRes,
-                        completed = routine.completed,
-                        subtasks = routine.subtasks
-                    )
+                        else -> emptyList()
+                    }
+                    subtasks.forEach { title ->
+                        repository.insertSubtask(SubtaskEntity(routineId = routineId, title = title))
+                    }
                 }
             }
         }

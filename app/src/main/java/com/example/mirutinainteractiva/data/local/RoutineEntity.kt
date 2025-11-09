@@ -10,5 +10,7 @@ data class RoutineEntity(
     val description: String,
     val difficulty: String,
     val imageRes: Int? = null,
-    val completed: Boolean = false
+    val completed: Boolean = false,
+    val isPredefined: Boolean,
+    val timeOfDay: String
 )
